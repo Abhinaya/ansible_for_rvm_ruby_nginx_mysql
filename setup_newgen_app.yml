@@ -1,0 +1,19 @@
+- hosts: default
+  user: myadmin
+  vars:
+    ruby: ruby-2.0.0-p247
+    user: myadmin
+  tasks:
+    - name: install RVM
+      command: curl -L https://get.rvm.io | bash -s -- --ignore-dotfiles creates=~/.rvm
+    - name: source
+      shell: source ~/.bash_profile executable=/bin/bash
+      tags: [ruby]
+    - name: source profile
+      shell: source /home/{{user}}/.rvm/scripts/rvm executable=/bin/bash
+      tags: [ruby]
+    - name: install Ruby 2.0
+      shell: executable=/bin/bash source /home/{{user}}/.rvm/scripts/rvm; rvm install --default {{ruby}} creates=~/.rvm/rubies/{{ruby}}
+      tags: [ruby]
+    - name: Install bundler
+      shell: executable=/bin/bash source /home/{{user}}/.rvm/scripts/rvm; gem install bundler; gem install passenger -v 4.0.5

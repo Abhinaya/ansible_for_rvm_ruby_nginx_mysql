@@ -1,0 +1,47 @@
+- hosts: default
+  user: myadmin
+  sudo: true
+  gather_facts: false
+
+  vars:
+    user: myadmin
+    home: /home/{{user}}
+    nginx_processes: "1"
+    nginx_connections: "1024"
+    nginx_prefix: /opt/nginx
+    nginx_src_dir: "{{home}}/src/nginx-1.4.4"
+    ruby_version: "2.0.0-p247"
+
+  # - include: nginx.yml
+
+  tasks:
+    - name: create source directory
+      action: file dest={{home}}/src owner={{user}} group={{user}} mode=755 state=directory 
+
+    - name: download nginx source
+      action: get_url url=http://nginx.org/download/nginx-1.4.4.tar.gz dest={{home}}/src/nginx-1.4.4.tar.gz
+
+    - name: untar and defeather
+      action: command creates={{home}}/src/nginx-1.4.4 tar -C ./src -xzvf {{home}}/src/nginx-1.4.4.tar.gz
+
+    - name: install passenger-nginx
+      shell: executable=/bin/bash source /home/{{user}}/.rvm/scripts/rvm; creates={{nginx_prefix}} passenger-install-nginx-module --auto --prefix={{nginx_prefix}} --nginx-source-dir={{nginx_src_dir}}  --extra-configure-flags=none
+
+    - name: write nginx.conf 
+      action: template src=templates/nginx.conf dest=/opt/nginx/conf/nginx.conf
+
+    - name: copy init
+      action: copy src=templates/init_nginx.sh dest=/etc/rc.d/init.d/nginx mode=755
+
+    - name: chkconfig
+      action: shell chkconfig --add nginx
+      action: shell chkconfig nginx on
+
+    - name: service nginx 
+      action: service name=nginx state=started enabled=yes
+      notify:
+      - restart nginx
+
+  handlers:
+     - name: restart nginx
+       action: service name=nginx state=restarted enabled=yes
