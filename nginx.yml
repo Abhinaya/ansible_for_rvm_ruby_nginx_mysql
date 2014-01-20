@@ -1,10 +1,8 @@
 - hosts: default
-  user: myadmin
-  sudo: true
-  gather_facts: false
+  user: newgen_admin
 
   vars:
-    user: myadmin
+    user: newgen_admin
     home: /home/{{user}}
     nginx_processes: "1"
     nginx_connections: "1024"
@@ -25,19 +23,24 @@
       action: command creates={{home}}/src/nginx-1.4.4 tar -C ./src -xzvf {{home}}/src/nginx-1.4.4.tar.gz
 
     - name: install passenger-nginx
+      sudo: True
       shell: executable=/bin/bash source /home/{{user}}/.rvm/scripts/rvm; creates={{nginx_prefix}} passenger-install-nginx-module --auto --prefix={{nginx_prefix}} --nginx-source-dir={{nginx_src_dir}}  --extra-configure-flags=none
 
     - name: write nginx.conf 
+      sudo: True
       action: template src=templates/nginx.conf dest=/opt/nginx/conf/nginx.conf
 
     - name: copy init
+      sudo: True
       action: copy src=templates/init_nginx.sh dest=/etc/rc.d/init.d/nginx mode=755
 
     - name: chkconfig
+      sudo: True
       action: shell chkconfig --add nginx
       action: shell chkconfig nginx on
 
     - name: service nginx 
+      sudo: True
       action: service name=nginx state=started enabled=yes
       notify:
       - restart nginx

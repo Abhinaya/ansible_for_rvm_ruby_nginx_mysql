@@ -1,18 +1,21 @@
 ---
 - hosts: default
   vars:
-    admin_user: myadmin
-    home_user: vagrant
+    admin_user: newgen_admin
+    home_user: root
   remote_user: "{{home_user}}"
   sudo: True
   tasks:
-  - name: ensure apache is at the latest version
+  - name: create newgen_admin user
     user: name={{admin_user}} createhome=yes system=yes state=present
+  - name: install libselinux-python
+    yum: name=libselinux-python
   - name: configure sudoers
     lineinfile: "dest=/etc/sudoers backup=yes state=present regexp='^%{{admin_user}}' insertafter='^# %wheel' line='%{{admin_user}} ALL=(ALL) NOPASSWD: ALL'"
   - file: path=/home/{{admin_user}}/.ssh state=directory owner={{admin_user}} group={{admin_user}} mode=700
   - name: Copy authorized_keys
-    shell: cp /home/{{home_user}}/.ssh/authorized_keys /home/{{admin_user}}/.ssh/
+    shell: cp /{{home_user}}/.ssh/authorized_keys /home/{{admin_user}}/.ssh/
+    shell: chown {{admin_user}}:{{admin_user}} /home/{{admin_user}}/.ssh/authorized_keys
   - name: install curl
     yum: name=curl-devel state=latest
   - name: install git

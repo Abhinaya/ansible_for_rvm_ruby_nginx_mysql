@@ -1,8 +1,8 @@
 - hosts: default
-  user: myadmin
+  user: newgen_admin
   vars:
     ruby: ruby-2.0.0-p247
-    user: myadmin
+    user: newgen_admin
   tasks:
     - name: install RVM
       command: curl -L https://get.rvm.io | bash -s -- --ignore-dotfiles creates=~/.rvm
@@ -12,6 +12,9 @@
     - name: source profile
       shell: source /home/{{user}}/.rvm/scripts/rvm executable=/bin/bash
       tags: [ruby]
+    - name: libyaml-devel install
+      sudo: True
+      yum: name=libyaml-devel state=latest
     - name: install Ruby 2.0
       shell: executable=/bin/bash source /home/{{user}}/.rvm/scripts/rvm; rvm install --default {{ruby}} creates=~/.rvm/rubies/{{ruby}}
       tags: [ruby]
