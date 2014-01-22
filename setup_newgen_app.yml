@@ -9,6 +9,8 @@
     - name: source
       shell: source ~/.bash_profile executable=/bin/bash
       tags: [ruby]
+    - name: source rvm
+      lineinfile: "dest=/home/{{user}}/.bash_profile line='[[ -s $HOME/.rvm/scripts/rvm ]] && source $HOME/.rvm/scripts/rvm'"
     - name: source profile
       shell: source /home/{{user}}/.rvm/scripts/rvm executable=/bin/bash
       tags: [ruby]
